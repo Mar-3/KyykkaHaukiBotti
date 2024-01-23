@@ -1,7 +1,8 @@
-const fs = require("fs").promises;
+
+import { promises as fs } from "fs";
 
 //TODO: The search method is duplicated. Move to a function that returns the placement of user in userdata.json
-module.exports = {
+const db = {
     // Add new user to userdata.json
     createUser: async (user) => {
         const filename = "./models/userdata.json";
@@ -17,7 +18,7 @@ module.exports = {
     },
 
     //Removes user from userdata.json
-    removeUser: async(name) => {
+    removeUser: async (name) => {
         const filename = "./models/userdata.json";
         const file2 = await fs.readFile('./models/userdata.json')
         let users = [
@@ -29,7 +30,7 @@ module.exports = {
 
             if (users[i].id.toString().includes(name)) {
                 delete users[i];
-                users.splice(i,1);
+                users.splice(i, 1);
                 //console.log("User removed")
                 await fs.writeFile('./models/userdata.json', JSON.stringify(users, null, 4));
 
@@ -105,7 +106,7 @@ module.exports = {
         for (let i = 0; i < users.length; i++) {
             if (users[i].id.toString().includes(id)) {
                 let hauet = users[i].hauet -= 1
-                if(hauet < 0){
+                if (hauet < 0) {
                     console.log("There are none left.");
                     users[i].hauet = 0;
                     await fs.writeFile('./models/userdata.json', JSON.stringify(users, null, 4));
@@ -125,9 +126,9 @@ module.exports = {
         users = await JSON.parse(file2);
         for (let i = 0; i < users.length; i++) {
             if (users[i].id.toString().includes(id)) {
-                for(let x = 0; x <= 6; x++){
+                for (let x = 0; x <= 6; x++) {
                     let hauet = users[i].hauet -= 1
-                    if(hauet < 0){
+                    if (hauet < 0) {
                         console.log("There are none left.");
                         users[i].hauet = 0;
                         await fs.writeFile('./models/userdata.json', JSON.stringify(users, null, 4));
@@ -164,3 +165,5 @@ const user = {
    "hauet": 0,
 };
 */
+
+export default db

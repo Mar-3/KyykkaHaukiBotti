@@ -1,15 +1,23 @@
-const { Telegraf } = require('telegraf');
-require('dotenv').config()
-const add = require('./botjs');
-const db = require('./datahandling')
+
+import { Telegraf } from "telegraf";
+import "dotenv/config"
+import add from "./botjs.js"
+import db from "./datahandling.js"
+import fetch from "node-fetch"
 //const {getHauki} = require("./botjs");
 
-const {TOKEN, TEAM} = process.env;
+const { TOKEN, TEAM } = process.env;
 
 
 const bot = new Telegraf(TOKEN);
 const teamUrl = "";
 //TODO refactor code duplicates to functions
+
+bot.command('testaa', async (ctx) => {
+    const res = await fetch("https://kyykka.com/api/teams/463/?season=25");
+    const data = await res.json()
+    console.log(data["2024"].players.filter((el) => el.player_name.includes("Marko")));
+})
 
 //TODO Let players find other players hauki left
 bot.command('laske', ctx => {
@@ -19,7 +27,7 @@ bot.command('laske', ctx => {
     msgArray.shift();
     let name = msgArray.join(' ');
     console.log(isNaN(name * 1))
-    if(name === ""){
+    if (name === "") {
         db.findUser(ctx.message.from.id).then(function (user) {
             //console.log("This is your Telegram userID: " + user)
             id = user;
@@ -27,13 +35,13 @@ bot.command('laske', ctx => {
                 ctx.reply('Haukia jäljellää: ' + result);
             })
         });
-    }else{
-        db.findUserByName(name).then(function (user){
+    } else {
+        db.findUserByName(name).then(function (user) {
             id = user;
             db.findHauki(id).then(function (result) {
-                if(user){
+                if (user) {
                     ctx.reply('Haukia jäljellä: ' + result);
-                }else{
+                } else {
                     ctx.reply('Kuka sä oot?');
                 }
 
@@ -45,8 +53,8 @@ bot.command('laske', ctx => {
 });
 
 bot.command('tunnistaudu', ctx => {
-    db.findUser(ctx.message.from.id).then(function (val){
-        if(!val) {
+    db.findUser(ctx.message.from.id).then(function (val) {
+        if (!val) {
             /*ctx.reply("Anna pelaajan nimi");
             bot.on('text', cnx => {*/
             let msgArray = ctx.message.text.split(' ');
@@ -57,7 +65,7 @@ bot.command('tunnistaudu', ctx => {
                 return;
             }
 
-            add.getHauki(haettava, TEAM).then(function (result) {
+            add.getHauki(haettava).then(function (result) {
                 if (result !== false) {
                     ctx.reply(`Sinulla on ${result} haukea.`);
                     const user = {
@@ -72,24 +80,24 @@ bot.command('tunnistaudu', ctx => {
 
                 }
             })
-        }else{
+        } else {
             ctx.reply("Olet jo tunnistautunut. /poista ensin, jos haluat tunnistautua uudelleen.")
         }
     });
 })
 
-bot.command('juo', ctx =>{
+bot.command('juo', ctx => {
     /*db.findUser(ctx.message.from.id).then(function (result){
         if(!result){
             ctx.reply("Tunnistaudu ensin. /laske etunimi")
             return;
         }*/
-    checkUser(ctx).then(function (result){
-        if(!result) return;
-        db.juoHauki(ctx.message.from.id).then(function (result){
-            if(result){
+    checkUser(ctx).then(function (result) {
+        if (!result) return;
+        db.juoHauki(ctx.message.from.id).then(function (result) {
+            if (result) {
                 ctx.reply('Ryybs');
-            }else{
+            } else {
                 ctx.reply('Hauet on jo juotu loppuun')
             }
         });
@@ -101,18 +109,18 @@ bot.command('juo', ctx =>{
 
 });
 
-bot.command('lauta', ctx =>{
+bot.command('lauta', ctx => {
     /*db.findUser(ctx.message.from.id).then(function (result){
         if(!result){
             ctx.reply("Tunnistaudu ensin. /laske etunimi")
             return;
         }*/
-    checkUser(ctx).then(function (result){
-        if(!result) return;
-        db.juoLauta(ctx.message.from.id).then(function (result){
-            if(result){
+    checkUser(ctx).then(function (result) {
+        if (!result) return;
+        db.juoLauta(ctx.message.from.id).then(function (result) {
+            if (result) {
                 ctx.reply('RYYBS!');
-            }else{
+            } else {
                 ctx.reply('Hauet on jo juotu loppuun')
             }
         });
@@ -122,21 +130,21 @@ bot.command('lauta', ctx =>{
 
 //TODO add hauki from outside NKL
 bot.command('lisaa', ctx => {
-    checkUser(ctx).then(function (result){
-        if(!result) return;
+    checkUser(ctx).then(function (result) {
+        if (!result) return;
 
         let msgArray = ctx.message.text.split(' ');
         msgArray.shift();
         let montako = msgArray.join(' ');
         console.log(isNaN(montako * 1))
-        if(montako === ""){
+        if (montako === "") {
             ctx.reply("Montako haukea haluat lisätä. /lisaa [montako]");
             return;
-        }else if(isNaN(montako * 1)){
+        } else if (isNaN(montako * 1)) {
             ctx.reply(`${montako} ei ole numero`)
             return;
         }
-        db.lisaaHaukia(ctx.message.from.id, montako).then(function (){
+        db.lisaaHaukia(ctx.message.from.id, montako).then(function () {
             ctx.reply(`${montako} haukea lisätty`)
         })
 
@@ -146,7 +154,7 @@ bot.command('lisaa', ctx => {
 
 })
 
-bot.command('poista', ctx =>{
+bot.command('poista', ctx => {
     db.removeUser(ctx.message.from.id);
     ctx.reply("Käyttäjä poistettu. Käytä [/laske nimi] uudelleen");
 
@@ -163,10 +171,10 @@ bot.command('help', ctx => {
 bot.launch();
 
 const checkUser = function (ctx) {
-    return new Promise(function (resolve){
-        db.findUser(ctx.message.from.id).then(function (result){
+    return new Promise(function (resolve) {
+        db.findUser(ctx.message.from.id).then(function (result) {
             let isUser = true;
-            if(!result){
+            if (!result) {
                 ctx.reply("Tunnistaudu ensin. /laske etunimi")
                 isUser = false;
             }
